@@ -1,4 +1,5 @@
 # DOSM Trade Engine
+<img width="1292" height="1032" alt="image" src="https://github.com/user-attachments/assets/11c6fb11-1e6b-4f72-b08c-c18d7982e73c" />
 
 Monthly Malaysian trade statistics from [OpenDOSM](https://open.dosm.gov.my), cleaned and
 flagged for anomalies in Python, then modelled and visualised in Power BI.
