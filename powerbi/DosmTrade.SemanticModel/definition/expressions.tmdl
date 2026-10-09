@@ -1,0 +1,5 @@
+expression ProcessedFolder = "C:\\Users\\courts\\dosm_trade_engine\\data\\processed" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]
+	lineageTag: 96ddc9cd-0a8d-41bd-95ea-c26bfee9dc98
+
+	annotation PBI_ResultType = Text
+

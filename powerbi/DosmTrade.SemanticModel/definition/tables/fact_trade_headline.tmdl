@@ -1,0 +1,431 @@
+table fact_trade_headline
+	lineageTag: 1576238d-8bd2-460a-9169-b3c7935306b3
+
+	measure 'Total Exports' = SUM(fact_trade_headline[exports])
+		formatString: #,0
+		displayFolder: Base
+		lineageTag: 5bd94544-597e-400b-b457-3f72fbfa5b26
+
+	measure 'Total Imports' = SUM(fact_trade_headline[imports])
+		formatString: #,0
+		displayFolder: Base
+		lineageTag: 7e2d2109-c387-4d13-89ee-c17348d67199
+
+	measure 'Trade Balance' = [Total Exports] - [Total Imports]
+		formatString: #,0
+		displayFolder: Base
+		lineageTag: b1c101de-4858-49ae-b533-bd918c5cc773
+
+	measure 'Exports PY' =
+			VAR LastDataDate = EOMONTH(CALCULATE(MAX(fact_trade_headline[date]), REMOVEFILTERS()), 0)
+			RETURN
+			    CALCULATE(
+			        [Total Exports],
+			        CALCULATETABLE(
+			            SAMEPERIODLASTYEAR(DimDate[Date]),
+			            KEEPFILTERS(DimDate[Date] <= LastDataDate)
+			        )
+			    )
+		formatString: #,0
+		displayFolder: Year on Year
+		lineageTag: a64eabfe-f0a2-402f-ac32-a401fa596b51
+
+	measure 'Exports YoY Growth %' =
+			VAR LastDataDate = EOMONTH(CALCULATE(MAX(fact_trade_headline[date]), REMOVEFILTERS()), 0)
+			VAR Comparable = CALCULATE([Total Exports], KEEPFILTERS(DimDate[Date] <= LastDataDate))
+			RETURN
+			    DIVIDE(Comparable - [Exports PY], [Exports PY])
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: Year on Year
+		lineageTag: 9fea8c69-1b0a-419a-b8fd-9ed9b509a870
+
+	measure 'Exports 3M MA' =
+			VAR LastMonth = MAX(fact_trade_headline[date])
+			VAR Period = DATESINPERIOD(DimDate[Date], EOMONTH(LastMonth, 0), -3, MONTH)
+			VAR MonthsWithData = CALCULATE(COUNTROWS(fact_trade_headline), Period)
+			RETURN
+			    IF(
+			        NOT ISBLANK(LastMonth) && MonthsWithData = 3,
+			        CALCULATE([Total Exports], Period) / 3
+			    )
+		formatString: #,0
+		displayFolder: Moving Average
+		lineageTag: 93d5a4e4-1add-4624-b4e8-e2d5a7d3c0f3
+
+	measure 'Trade Balance 3M MA' =
+			VAR LastMonth = MAX(fact_trade_headline[date])
+			VAR Period = DATESINPERIOD(DimDate[Date], EOMONTH(LastMonth, 0), -3, MONTH)
+			VAR MonthsWithData = CALCULATE(COUNTROWS(fact_trade_headline), Period)
+			RETURN
+			    IF(
+			        NOT ISBLANK(LastMonth) && MonthsWithData = 3,
+			        CALCULATE([Trade Balance], Period) / 3
+			    )
+		formatString: #,0
+		displayFolder: Moving Average
+		lineageTag: bf011e4a-203f-47d4-a81e-a3a4c47816b7
+
+	measure 'Latest Month' =
+			VAR LastMonth = MAX(fact_trade_headline[date])
+			RETURN
+			    IF(NOT ISBLANK(LastMonth), FORMAT(LastMonth, "MMM yyyy"))
+		displayFolder: Latest Month
+		lineageTag: 927219eb-8f3a-4370-a621-508146640e32
+
+	measure 'Exports (Latest Month)' =
+			VAR LastMonth = MAX(fact_trade_headline[date])
+			RETURN
+			    CALCULATE([Total Exports], KEEPFILTERS(DimDate[Date] = LastMonth))
+		formatString: #,0
+		displayFolder: Latest Month
+		lineageTag: 92ff3aa2-894c-4d8b-8270-78f72f0b6f4f
+
+	measure 'Trade Balance (Latest Month)' =
+			VAR LastMonth = MAX(fact_trade_headline[date])
+			RETURN
+			    CALCULATE([Trade Balance], KEEPFILTERS(DimDate[Date] = LastMonth))
+		formatString: #,0
+		displayFolder: Latest Month
+		lineageTag: 058c8d4a-0c56-42ac-b81f-24f1ff633593
+
+	measure 'Exports YoY % (Latest Month)' =
+			VAR LastMonth = MAX(fact_trade_headline[date])
+			RETURN
+			    CALCULATE([Exports YoY Growth %], KEEPFILTERS(DimDate[Date] = LastMonth))
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: Latest Month
+		lineageTag: 80f98d4e-b302-45d5-bf8d-5aff24cac6b7
+
+	measure 'Export Anomaly Months' =
+			CALCULATE(
+			    COUNTROWS(fact_trade_headline),
+			    fact_trade_headline[is_export_anomaly] = TRUE()
+			) + 0
+		formatString: 0
+		displayFolder: Anomalies
+		lineageTag: 6349bf36-16e3-41f3-87ca-ad224451c752
+
+	measure 'Export Status' =
+			VAR LastMonth = MAX(fact_trade_headline[date])
+			VAR IsAnomaly =
+			    CALCULATE(
+			        COUNTROWS(fact_trade_headline),
+			        fact_trade_headline[date] = LastMonth,
+			        fact_trade_headline[is_export_anomaly] = TRUE()
+			    )
+			RETURN
+			    IF(
+			        ISBLANK(LastMonth),
+			        BLANK(),
+			        IF(IsAnomaly > 0, "Outlier", "Nominal")
+			    )
+		displayFolder: Anomalies
+		lineageTag: c260ae76-aa59-4f23-88f7-d2cd6e53472d
+
+	measure 'Imports (Latest Month)' =
+			VAR LastMonth = MAX(fact_trade_headline[date])
+			RETURN
+			    CALCULATE([Total Imports], KEEPFILTERS(DimDate[Date] = LastMonth))
+		formatString: #,0
+		displayFolder: Latest Month
+		lineageTag: f1259488-867a-4dde-876d-8f02e315b569
+
+	measure 'Imports YoY % (Latest Month)' =
+			VAR LastMonth = MAX(fact_trade_headline[date])
+			VAR Cur = [Imports (Latest Month)]
+			VAR PY = CALCULATE([Total Imports], DimDate[Date] = EDATE(LastMonth, -12))
+			RETURN
+			    IF(NOT ISBLANK(LastMonth), DIVIDE(Cur - PY, PY))
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: Latest Month
+		lineageTag: 481f51ae-bbb6-4087-b5d8-774b403f16c0
+
+	measure 'Trade Balance Change vs PY (Latest Month)' =
+			VAR LastMonth = MAX(fact_trade_headline[date])
+			VAR Cur = [Trade Balance (Latest Month)]
+			VAR PY = CALCULATE([Trade Balance], DimDate[Date] = EDATE(LastMonth, -12))
+			RETURN
+			    IF(NOT ISBLANK(LastMonth) && NOT ISBLANK(PY), Cur - PY)
+		formatString: #,0
+		displayFolder: Latest Month
+		lineageTag: 73cff09f-b831-4c33-90f6-d1be6a784ded
+
+	measure 'Export Z-Score (Latest Month)' =
+			VAR LastMonth = MAX(fact_trade_headline[date])
+			RETURN
+			    CALCULATE(
+			        MAX(fact_trade_headline[exports_yoy_zscore]),
+			        fact_trade_headline[date] = LastMonth
+			    )
+		formatString: 0.00
+		displayFolder: Latest Month
+		lineageTag: dd4c3846-70e4-45f6-a79e-7e5382fe6428
+
+	measure 'Card Exports' = "RM " & FORMAT([Exports (Latest Month)] / 1000, "#,0.0") & "bn"
+		displayFolder: Cards
+		lineageTag: b1d84cfb-923e-46f8-80a4-8fa29840f50d
+
+	measure 'Card Imports' = "RM " & FORMAT([Imports (Latest Month)] / 1000, "#,0.0") & "bn"
+		displayFolder: Cards
+		lineageTag: f6994cff-1119-4b92-998f-10e918db5d6f
+
+	measure 'Card Trade Balance' = "RM " & FORMAT([Trade Balance (Latest Month)] / 1000, "#,0.0") & "bn"
+		displayFolder: Cards
+		lineageTag: c75b2f2a-d59c-4917-99d4-229909ca4cd3
+
+	measure 'Card Period Exports' = "RM " & FORMAT([Total Exports] / 1000, "#,0") & "bn"
+		displayFolder: Cards
+		lineageTag: 59a82c30-7340-4aae-ad9a-1b1b5882c37c
+
+	measure 'Label Exports vs PY' =
+			VAR v = [Exports YoY % (Latest Month)]
+			RETURN
+			    IF(
+			        ISBLANK(v),
+			        "No prior-year data",
+			        IF(v >= 0, "▲ ", "▼ ") & FORMAT(ABS(v), "0.0%") & " vs " & FORMAT(EDATE(MAX(fact_trade_headline[date]), -12), "MMM yyyy")
+			    )
+		displayFolder: Cards
+		lineageTag: bec7780b-4daa-4820-bbcf-20bf5c2f741c
+
+	measure 'Color Exports vs PY' =
+			VAR v = [Exports YoY % (Latest Month)]
+			RETURN
+			    SWITCH(TRUE(), ISBLANK(v), "#64748B", v >= 0, "#16A34A", "#DC2626")
+		displayFolder: Cards
+		lineageTag: 66f6b2af-85d3-43cb-b417-47b675fe21aa
+
+	measure 'Label Imports vs PY' =
+			VAR v = [Imports YoY % (Latest Month)]
+			RETURN
+			    IF(
+			        ISBLANK(v),
+			        "No prior-year data",
+			        IF(v >= 0, "▲ ", "▼ ") & FORMAT(ABS(v), "0.0%") & " vs " & FORMAT(EDATE(MAX(fact_trade_headline[date]), -12), "MMM yyyy")
+			    )
+		displayFolder: Cards
+		lineageTag: 3b9c4a71-e94a-4a03-a7e4-933cd6e2b810
+
+	measure 'Label Trade Balance vs PY' =
+			VAR v = [Trade Balance Change vs PY (Latest Month)]
+			RETURN
+			    IF(
+			        ISBLANK(v),
+			        "No prior-year data",
+			        IF(v >= 0, "▲ ", "▼ ") & "RM " & FORMAT(ABS(v) / 1000, "#,0.0") & "bn vs " & FORMAT(EDATE(MAX(fact_trade_headline[date]), -12), "MMM yyyy")
+			    )
+		displayFolder: Cards
+		lineageTag: 9765304f-d10f-4656-8915-a882c895bf32
+
+	measure 'Color Trade Balance vs PY' =
+			VAR v = [Trade Balance Change vs PY (Latest Month)]
+			RETURN
+			    SWITCH(TRUE(), ISBLANK(v), "#64748B", v >= 0, "#16A34A", "#DC2626")
+		displayFolder: Cards
+		lineageTag: 754e9be9-e0c2-4ab7-8729-a28004c55aa9
+
+	measure 'Label Period Exports vs PY' =
+			VAR v = [Exports YoY Growth %]
+			RETURN
+			    IF(
+			        ISBLANK(v),
+			        "No prior-year data",
+			        IF(v >= 0, "▲ ", "▼ ") & FORMAT(ABS(v), "0.0%") & " vs same period, prior year"
+			    )
+		displayFolder: Cards
+		lineageTag: 477f4ed1-4a52-4068-9f0a-37a653d18384
+
+	measure 'Color Period Exports vs PY' =
+			VAR v = [Exports YoY Growth %]
+			RETURN
+			    SWITCH(TRUE(), ISBLANK(v), "#64748B", v >= 0, "#16A34A", "#DC2626")
+		displayFolder: Cards
+		lineageTag: eada24b1-0f1c-4446-8bd9-23ee95163f78
+
+	measure 'Card Export Signal' =
+			VAR z = [Export Z-Score (Latest Month)]
+			RETURN
+			    SWITCH(
+			        TRUE(),
+			        ISBLANK(z), "No data",
+			        ABS(z) > 2.5, "Unusual",
+			        "Normal"
+			    )
+		displayFolder: Cards
+		lineageTag: 61b2240b-2438-4d55-96b3-4c2a21b9a893
+
+	measure 'Label Export Signal' =
+			VAR z = [Export Z-Score (Latest Month)]
+			RETURN
+			    IF(
+			        ISBLANK(z),
+			        "Needs 12 months of history",
+			        "z-score " & FORMAT(z, "+0.00;-0.00") & " · threshold ±2.5"
+			    )
+		displayFolder: Cards
+		lineageTag: c1462ff6-6b3d-426e-941b-5f449c338652
+
+	measure 'Period Label' =
+			VAR FirstYear = MIN(DimDate[Year])
+			VAR LastYear = YEAR(MAX(fact_trade_headline[date]))
+			RETURN
+			    IF(
+			        HASONEVALUE(DimDate[Year]),
+			        FORMAT(FirstYear, "0"),
+			        FORMAT(FirstYear, "0") & "–" & FORMAT(LastYear, "0")
+			    )
+		displayFolder: Titles
+		lineageTag: d8a92659-4a24-42ca-a98e-086d15217692
+
+	measure 'Title Exports' = "Exports · " & [Latest Month]
+		displayFolder: Titles
+		lineageTag: 21703f01-d2ab-4b0a-b857-07af788e8ef0
+
+	measure 'Title Imports' = "Imports · " & [Latest Month]
+		displayFolder: Titles
+		lineageTag: 8ae77cae-3c02-4b14-867e-979ba401f7cb
+
+	measure 'Title Trade Balance' = "Trade balance · " & [Latest Month]
+		displayFolder: Titles
+		lineageTag: 77b19ac4-2a08-49ea-9097-af1652dc1be8
+
+	measure 'Title Period Exports' = "Total exports · " & [Period Label]
+		displayFolder: Titles
+		lineageTag: 61c1ebff-9df5-4767-addb-9371fadc6d31
+
+	measure 'Title Export Signal' = "Export growth signal · " & [Latest Month]
+		displayFolder: Titles
+		lineageTag: a13be856-d34e-4be0-9bae-28c9bb5c25ab
+
+	measure 'Title Trend' = "Monthly exports and imports, RM million · " & [Period Label]
+		displayFolder: Titles
+		lineageTag: ec53789e-574d-4776-8df4-48640aea3f2d
+
+	column date
+		dataType: dateTime
+		isHidden
+		formatString: Short Date
+		lineageTag: 629f07dc-44a9-46f7-9a71-0ed62f0c580b
+		summarizeBy: none
+		sourceColumn: date
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column exports
+		dataType: double
+		formatString: #,0.0
+		lineageTag: 71ff43b4-d308-440c-8d34-c84b50644963
+		summarizeBy: none
+		sourceColumn: exports
+
+	column exports_domestic
+		dataType: double
+		formatString: #,0.0
+		lineageTag: fb95a136-60ed-4728-b62c-971f20d0c6ef
+		summarizeBy: none
+		sourceColumn: exports_domestic
+
+	column re_exports
+		dataType: double
+		formatString: #,0.0
+		lineageTag: 7e27b735-4554-45cb-92aa-f4f71cfe5723
+		summarizeBy: none
+		sourceColumn: re_exports
+
+	column imports
+		dataType: double
+		formatString: #,0.0
+		lineageTag: 0acb7c6e-870b-466a-8338-13f212ab9782
+		summarizeBy: none
+		sourceColumn: imports
+
+	column imports_retained
+		dataType: double
+		formatString: #,0.0
+		lineageTag: d1dc29df-0fbb-469d-8203-81654076945d
+		summarizeBy: none
+		sourceColumn: imports_retained
+
+	column total
+		dataType: double
+		formatString: #,0.0
+		lineageTag: 11a819e9-9fb6-44f3-930c-c7cbeb729450
+		summarizeBy: none
+		sourceColumn: total
+
+	column balance
+		dataType: double
+		formatString: #,0.0
+		lineageTag: 888f82cf-8740-4907-a0aa-b04f0aa09c53
+		summarizeBy: none
+		sourceColumn: balance
+
+	column exports_yoy_pct
+		dataType: double
+		formatString: 0.00
+		lineageTag: 26840912-f7be-4afe-86d0-1fcdc09fecce
+		summarizeBy: none
+		sourceColumn: exports_yoy_pct
+
+	column imports_yoy_pct
+		dataType: double
+		formatString: 0.00
+		lineageTag: c96675a8-de6e-45ee-b82d-77c8c84764ef
+		summarizeBy: none
+		sourceColumn: imports_yoy_pct
+
+	column exports_3m_ma
+		dataType: double
+		formatString: #,0.0
+		lineageTag: 3a6cc77c-ea25-4aa3-b342-7bf482a5ba9d
+		summarizeBy: none
+		sourceColumn: exports_3m_ma
+
+	column trade_balance_3m_ma
+		dataType: double
+		formatString: #,0.0
+		lineageTag: a0ae52b1-ea48-42db-9212-8aabe0f3e532
+		summarizeBy: none
+		sourceColumn: trade_balance_3m_ma
+
+	column exports_yoy_zscore
+		dataType: double
+		formatString: 0.00
+		lineageTag: 7a21c704-dc82-486c-aeea-3c4330320953
+		summarizeBy: none
+		sourceColumn: exports_yoy_zscore
+
+	column is_export_anomaly
+		dataType: boolean
+		lineageTag: 231b3212-a564-4d2e-b560-bcc846481034
+		summarizeBy: none
+		sourceColumn: is_export_anomaly
+
+	partition fact_trade_headline = m
+		mode: import
+		source =
+				let
+				    Source = Csv.Document(
+				        File.Contents(ProcessedFolder & "\fact_trade_headline.csv"),
+				        [Delimiter=",", Encoding=65001, QuoteStyle=QuoteStyle.Csv]
+				    ),
+				    #"Promoted Headers" = Table.PromoteHeaders(Source, [PromoteAllScalars=true]),
+				    #"Typed" = Table.TransformColumnTypes(#"Promoted Headers", {
+				        {"date", type date},
+				        {"exports", type number},
+				        {"exports_domestic", type number},
+				        {"re_exports", type number},
+				        {"imports", type number},
+				        {"imports_retained", type number},
+				        {"total", type number},
+				        {"balance", type number},
+				        {"exports_yoy_pct", type number},
+				        {"imports_yoy_pct", type number},
+				        {"exports_3m_ma", type number},
+				        {"trade_balance_3m_ma", type number},
+				        {"exports_yoy_zscore", type number},
+				        {"is_export_anomaly", type logical}
+				    }, "en-US")
+				in
+				    #"Typed"
+

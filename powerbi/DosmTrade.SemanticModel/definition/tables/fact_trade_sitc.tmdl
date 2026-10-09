@@ -1,0 +1,188 @@
+table fact_trade_sitc
+	lineageTag: ccec9076-b855-4d36-9bc9-51626a90c756
+
+	measure 'Sector Exports' = SUM(fact_trade_sitc[exports])
+		formatString: #,0
+		displayFolder: Base
+		lineageTag: e0d00abe-daaa-46c2-a06e-74bd3950f6c5
+
+	measure 'Sector Imports' = SUM(fact_trade_sitc[imports])
+		formatString: #,0
+		displayFolder: Base
+		lineageTag: 6a5afc1b-9e3b-4f95-9a47-069debc77c78
+
+	measure 'Sector Trade Balance' = [Sector Exports] - [Sector Imports]
+		formatString: #,0
+		displayFolder: Base
+		lineageTag: 7ce99359-da9f-4b2d-be2b-90ee6d6972ee
+
+	measure 'Sector Share of Total %' =
+			DIVIDE(
+			    [Sector Exports],
+			    CALCULATE([Sector Exports], REMOVEFILTERS(dim_sitc))
+			)
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: Base
+		lineageTag: f4d341f5-a8f5-4ef7-a3b1-a2ee1098e6aa
+
+	measure 'Sector Exports PY' =
+			VAR LastDataDate = EOMONTH(CALCULATE(MAX(fact_trade_sitc[date]), REMOVEFILTERS()), 0)
+			RETURN
+			    CALCULATE(
+			        [Sector Exports],
+			        CALCULATETABLE(
+			            SAMEPERIODLASTYEAR(DimDate[Date]),
+			            KEEPFILTERS(DimDate[Date] <= LastDataDate)
+			        )
+			    )
+		formatString: #,0
+		displayFolder: Year on Year
+		lineageTag: b973782f-83d0-45e6-bdd5-2ff6ea116e07
+
+	measure 'Sector Exports YoY Growth %' =
+			VAR LastDataDate = EOMONTH(CALCULATE(MAX(fact_trade_sitc[date]), REMOVEFILTERS()), 0)
+			VAR Comparable = CALCULATE([Sector Exports], KEEPFILTERS(DimDate[Date] <= LastDataDate))
+			RETURN
+			    DIVIDE(Comparable - [Sector Exports PY], [Sector Exports PY])
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: Year on Year
+		lineageTag: 6defcd59-6399-4f60-992a-6757fcc2ddea
+
+	measure 'Sector Exports YoY % (Latest Month)' =
+			VAR LastMonth = MAX(fact_trade_sitc[date])
+			RETURN
+			    CALCULATE([Sector Exports YoY Growth %], KEEPFILTERS(DimDate[Date] = LastMonth))
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: Latest Month
+		lineageTag: 8ba4f7fc-1ef3-41a2-9a5d-8514d7745e7d
+
+	measure 'Spike Exports' = CALCULATE([Sector Exports], fact_trade_sitc[is_sector_spike] = TRUE())
+		formatString: #,0
+		displayFolder: Anomalies
+		lineageTag: 5cd9c3ea-7f89-4957-8767-00a779edffea
+
+	measure 'Spike YoY %' =
+			CALCULATE(
+			    AVERAGE(fact_trade_sitc[exports_yoy_pct]) / 100,
+			    fact_trade_sitc[is_sector_spike] = TRUE()
+			)
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: Anomalies
+		lineageTag: f9066cbf-1a4b-4cd7-9979-462b3d202c75
+
+	measure 'Spike Z-Score' =
+			CALCULATE(
+			    AVERAGE(fact_trade_sitc[exports_yoy_zscore]),
+			    fact_trade_sitc[is_sector_spike] = TRUE()
+			)
+		formatString: 0.00
+		displayFolder: Anomalies
+		lineageTag: 4e9ecf8a-9abf-4d77-847d-cbddf162ab32
+
+	measure 'Sector Spike Months' =
+			CALCULATE(
+			    COUNTROWS(fact_trade_sitc),
+			    fact_trade_sitc[is_sector_spike] = TRUE()
+			) + 0
+		formatString: 0
+		displayFolder: Anomalies
+		lineageTag: ac2bda0b-fde8-4b02-b87d-05480004bdb1
+
+	measure 'Color Sector YoY' =
+			VAR v = [Sector Exports YoY % (Latest Month)]
+			RETURN
+			    SWITCH(TRUE(), ISBLANK(v), "#64748B", v >= 0, "#16A34A", "#DC2626")
+		displayFolder: Cards
+		lineageTag: cfb18b69-415d-4731-a875-7f5a05cd87fb
+
+	measure 'Title Sector Share' = "Share of exports by section · " & [Period Label]
+		displayFolder: Titles
+		lineageTag: 3c0bdb3c-d6bf-40b9-a1bd-4b49e6fd3ef2
+
+	measure 'Title Sector Growth' =
+			VAR LastMonth = MAX(fact_trade_sitc[date])
+			RETURN
+			    "Export growth, " & FORMAT(LastMonth, "MMM yyyy") & " vs " & FORMAT(EDATE(LastMonth, -12), "MMM yyyy")
+		displayFolder: Titles
+		lineageTag: 1dd65dc6-259f-49a3-a407-daff3135d72c
+
+	column date
+		dataType: dateTime
+		isHidden
+		formatString: Short Date
+		lineageTag: d9af7757-4234-4d6e-a1e2-f35bae9e1e25
+		summarizeBy: none
+		sourceColumn: date
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column section
+		dataType: string
+		isHidden
+		lineageTag: cb90de2f-15ec-4e48-8092-1d235c1d845d
+		summarizeBy: none
+		sourceColumn: section
+
+	column exports
+		dataType: double
+		formatString: #,0.0
+		lineageTag: 9fa536e9-a1a2-480e-811f-2274043e3c72
+		summarizeBy: none
+		sourceColumn: exports
+
+	column imports
+		dataType: double
+		formatString: #,0.0
+		lineageTag: ba3a2ba6-986f-4e55-a0e6-6c6a7cf7e22a
+		summarizeBy: none
+		sourceColumn: imports
+
+	column trade_balance
+		dataType: double
+		formatString: #,0.0
+		lineageTag: 4f77369e-811a-4f44-a4e3-462715f077d5
+		summarizeBy: none
+		sourceColumn: trade_balance
+
+	column exports_yoy_pct
+		dataType: double
+		formatString: 0.00
+		lineageTag: 233e372b-04f8-4745-89ac-1142074ac1af
+		summarizeBy: none
+		sourceColumn: exports_yoy_pct
+
+	column exports_yoy_zscore
+		dataType: double
+		formatString: 0.00
+		lineageTag: 687312d2-b3a4-458c-b2b9-e9d9b1b15c02
+		summarizeBy: none
+		sourceColumn: exports_yoy_zscore
+
+	column is_sector_spike
+		dataType: boolean
+		lineageTag: be312e79-8859-44f8-82c8-f0bc89918a26
+		summarizeBy: none
+		sourceColumn: is_sector_spike
+
+	partition fact_trade_sitc = m
+		mode: import
+		source =
+				let
+				    Source = Csv.Document(
+				        File.Contents(ProcessedFolder & "\fact_trade_sitc.csv"),
+				        [Delimiter=",", Encoding=65001, QuoteStyle=QuoteStyle.Csv]
+				    ),
+				    #"Promoted Headers" = Table.PromoteHeaders(Source, [PromoteAllScalars=true]),
+				    #"Typed" = Table.TransformColumnTypes(#"Promoted Headers", {
+				        {"date", type date},
+				        {"section", type text},
+				        {"exports", type number},
+				        {"imports", type number},
+				        {"trade_balance", type number},
+				        {"exports_yoy_pct", type number},
+				        {"exports_yoy_zscore", type number},
+				        {"is_sector_spike", type logical}
+				    }, "en-US")
+				in
+				    #"Typed"
+

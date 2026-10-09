@@ -1,0 +1,11 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "SemanticModel",
+    "displayName": "DosmTrade"
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "5704728b-f490-412e-8625-c7e18b5b710c"
+  }
+}

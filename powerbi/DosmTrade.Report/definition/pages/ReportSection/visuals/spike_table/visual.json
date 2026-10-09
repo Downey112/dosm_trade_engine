@@ -1,0 +1,153 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.3.0/schema.json",
+  "name": "spike_table",
+  "position": {
+    "x": 744,
+    "y": 400,
+    "z": 21000,
+    "height": 304,
+    "width": 512,
+    "tabOrder": 21000
+  },
+  "visual": {
+    "visualType": "tableEx",
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "DimDate"
+                    }
+                  },
+                  "Property": "YearMonth"
+                }
+              },
+              "queryRef": "DimDate.YearMonth",
+              "nativeQueryRef": "YearMonth",
+              "displayName": "Month"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "dim_sitc"
+                    }
+                  },
+                  "Property": "section_label"
+                }
+              },
+              "queryRef": "dim_sitc.section_label",
+              "nativeQueryRef": "section_label",
+              "displayName": "Section"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "fact_trade_sitc"
+                    }
+                  },
+                  "Property": "Spike Exports"
+                }
+              },
+              "queryRef": "fact_trade_sitc.Spike Exports",
+              "nativeQueryRef": "Spike Exports",
+              "displayName": "RM m"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "fact_trade_sitc"
+                    }
+                  },
+                  "Property": "Spike YoY %"
+                }
+              },
+              "queryRef": "fact_trade_sitc.Spike YoY %",
+              "nativeQueryRef": "Spike YoY %",
+              "displayName": "YoY"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "fact_trade_sitc"
+                    }
+                  },
+                  "Property": "Spike Z-Score"
+                }
+              },
+              "queryRef": "fact_trade_sitc.Spike Z-Score",
+              "nativeQueryRef": "Spike Z-Score",
+              "displayName": "Z-score"
+            }
+          ]
+        }
+      },
+      "sortDefinition": {
+        "sort": [
+          {
+            "field": {
+              "Column": {
+                "Expression": {
+                  "SourceRef": {
+                    "Entity": "DimDate"
+                  }
+                },
+                "Property": "YearMonth"
+              }
+            },
+            "direction": "Descending"
+          }
+        ]
+      }
+    },
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Unusual sector months (z-score beyond ±3)'"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "drillFilterOtherVisuals": true,
+    "objects": {
+      "total": [
+        {
+          "properties": {
+            "totals": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

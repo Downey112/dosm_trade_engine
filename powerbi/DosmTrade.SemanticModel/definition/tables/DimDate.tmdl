@@ -1,0 +1,57 @@
+table DimDate
+	lineageTag: 426ba2e6-9b93-40f5-9ceb-946789a39473
+	dataCategory: Time
+
+	column Date
+		dataType: dateTime
+		isKey
+		formatString: Short Date
+		lineageTag: 86a7ab64-35ce-48db-8964-332ce7a68adf
+		summarizeBy: none
+		sourceColumn: Date
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column Year
+		dataType: int64
+		lineageTag: 3f9dcbeb-c973-4dda-9ff2-f3d7772c7f40
+		summarizeBy: none
+		sourceColumn: Year
+
+	column MonthNo
+		dataType: int64
+		isHidden
+		lineageTag: 831a9686-ada9-44cf-9c06-cd8aaa613f28
+		summarizeBy: none
+		sourceColumn: MonthNo
+
+	column Month
+		dataType: string
+		lineageTag: 2a75048d-7d64-4ee0-beba-3bbf70be4a8b
+		summarizeBy: none
+		sourceColumn: Month
+		sortByColumn: MonthNo
+
+	column YearMonth
+		dataType: string
+		lineageTag: 7047ef81-9750-45a3-95dc-8fca9994e2d7
+		summarizeBy: none
+		sourceColumn: YearMonth
+
+	partition DimDate = m
+		mode: import
+		source =
+				let
+				    StartDate = #date(2000, 1, 1),
+				    EndDate = #date(Date.Year(DateTime.LocalNow()), 12, 31),
+				    DayCount = Duration.Days(EndDate - StartDate) + 1,
+				    Source = List.Dates(StartDate, DayCount, #duration(1, 0, 0, 0)),
+				    #"Table From List" = Table.FromList(Source, Splitter.SplitByNothing(), {"Date"}),
+				    #"Changed Type" = Table.TransformColumnTypes(#"Table From List", {{"Date", type date}}),
+				    #"Added Year" = Table.AddColumn(#"Changed Type", "Year", each Date.Year([Date]), Int64.Type),
+				    #"Added MonthNo" = Table.AddColumn(#"Added Year", "MonthNo", each Date.Month([Date]), Int64.Type),
+				    #"Added Month" = Table.AddColumn(#"Added MonthNo", "Month", each Date.ToText([Date], "MMM", "en-US"), type text),
+				    #"Added YearMonth" = Table.AddColumn(#"Added Month", "YearMonth", each Date.ToText([Date], "yyyy-MM"), type text)
+				in
+				    #"Added YearMonth"
+

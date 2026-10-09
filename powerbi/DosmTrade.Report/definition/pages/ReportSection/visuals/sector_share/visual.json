@@ -1,0 +1,101 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.3.0/schema.json",
+  "name": "sector_share",
+  "position": {
+    "x": 24,
+    "y": 400,
+    "z": 19000,
+    "height": 304,
+    "width": 344,
+    "tabOrder": 19000
+  },
+  "visual": {
+    "visualType": "clusteredBarChart",
+    "query": {
+      "queryState": {
+        "Category": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "dim_sitc"
+                    }
+                  },
+                  "Property": "section_label"
+                }
+              },
+              "queryRef": "dim_sitc.section_label",
+              "nativeQueryRef": "section_label",
+              "active": true
+            }
+          ]
+        },
+        "Y": {
+          "projections": [
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "fact_trade_sitc"
+                    }
+                  },
+                  "Property": "Sector Share of Total %"
+                }
+              },
+              "queryRef": "fact_trade_sitc.Sector Share of Total %",
+              "nativeQueryRef": "Sector Share of Total %"
+            }
+          ]
+        }
+      },
+      "sortDefinition": {
+        "sort": [
+          {
+            "field": {
+              "Measure": {
+                "Expression": {
+                  "SourceRef": {
+                    "Entity": "fact_trade_sitc"
+                  }
+                },
+                "Property": "Sector Share of Total %"
+              }
+            },
+            "direction": "Descending"
+          }
+        ]
+      }
+    },
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "fact_trade_sitc"
+                    }
+                  },
+                  "Property": "Title Sector Share"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "drillFilterOtherVisuals": true
+  }
+}

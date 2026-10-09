@@ -1,0 +1,137 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.3.0/schema.json",
+  "name": "trend",
+  "position": {
+    "x": 24,
+    "y": 192,
+    "z": 18000,
+    "height": 192,
+    "width": 1232,
+    "tabOrder": 18000
+  },
+  "visual": {
+    "visualType": "lineChart",
+    "query": {
+      "queryState": {
+        "Category": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "DimDate"
+                    }
+                  },
+                  "Property": "Date"
+                }
+              },
+              "queryRef": "DimDate.Date",
+              "nativeQueryRef": "Date",
+              "active": true
+            }
+          ]
+        },
+        "Y": {
+          "projections": [
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "fact_trade_headline"
+                    }
+                  },
+                  "Property": "Total Exports"
+                }
+              },
+              "queryRef": "fact_trade_headline.Total Exports",
+              "nativeQueryRef": "Total Exports"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "fact_trade_headline"
+                    }
+                  },
+                  "Property": "Total Imports"
+                }
+              },
+              "queryRef": "fact_trade_headline.Total Imports",
+              "nativeQueryRef": "Total Imports"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "fact_trade_headline"
+                    }
+                  },
+                  "Property": "Exports 3M MA"
+                }
+              },
+              "queryRef": "fact_trade_headline.Exports 3M MA",
+              "nativeQueryRef": "Exports 3M MA"
+            }
+          ]
+        }
+      }
+    },
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "fact_trade_headline"
+                    }
+                  },
+                  "Property": "Title Trend"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "drillFilterOtherVisuals": true,
+    "objects": {
+      "lineStyles": [
+        {
+          "properties": {
+            "lineStyle": {
+              "expr": {
+                "Literal": {
+                  "Value": "'dashed'"
+                }
+              }
+            },
+            "strokeWidth": {
+              "expr": {
+                "Literal": {
+                  "Value": "1D"
+                }
+              }
+            }
+          },
+          "selector": {
+            "metadata": "fact_trade_headline.Exports 3M MA"
+          }
+        }
+      ]
+    }
+  }
+}

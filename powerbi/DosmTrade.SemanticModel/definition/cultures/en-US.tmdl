@@ -1,0 +1,116 @@
+cultureInfo en-US
+
+	linguisticMetadata =
+			{
+			  "Version": "2.0.0",
+			  "Language": "en-US",
+			  "Entities": {
+			    "dimdate.yearmonth": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "DimDate",
+			          "ConceptualProperty": "YearMonth"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Month": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "dim_sitc.section_label": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "dim_sitc",
+			          "ConceptualProperty": "section_label"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Section": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "fact_trade_sitc.spike_exports": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "fact_trade_sitc",
+			          "ConceptualProperty": "Spike Exports"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "RM m": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "fact_trade_sitc.spike_yoy_": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "fact_trade_sitc",
+			          "ConceptualProperty": "Spike YoY %"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "YoY": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "fact_trade_sitc.spike_zscore": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "fact_trade_sitc",
+			          "ConceptualProperty": "Spike Z-Score"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Z-score": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    }
+			  }
+			}
+		contentType: json
+

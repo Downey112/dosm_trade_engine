@@ -1,0 +1,12 @@
+relationship headline_date
+	fromColumn: fact_trade_headline.date
+	toColumn: DimDate.Date
+
+relationship sitc_date
+	fromColumn: fact_trade_sitc.date
+	toColumn: DimDate.Date
+
+relationship sitc_section
+	fromColumn: fact_trade_sitc.section
+	toColumn: dim_sitc.section
+

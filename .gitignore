@@ -1,0 +1,13 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+
+# Power BI local-only files
+**/.pbi/localSettings.json
+**/.pbi/cache.abf
+
+# OS
+Thumbs.db
+desktop.ini
+.DS_Store
